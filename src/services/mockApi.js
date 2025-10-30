@@ -71,16 +71,35 @@ const calculateStats = (data) => {
   };
 };
 
-const generateAnomalies = () => {
+const generateAnomalies = (period = 'daily', baseDate = new Date()) => {
   const types = ['Sudden Spike', 'Unusual Pattern', 'Device Malfunction', 'After Hours Usage'];
   const severities = ['high', 'medium', 'low'];
+  const locations = ['Building A', 'Building B', 'Building C', 'Residential Area'];
+
+  let maxHoursBack;
+  switch (period) {
+    case 'daily':
+      maxHoursBack = 24;
+      break;
+    case 'weekly':
+      maxHoursBack = 24 * 7;
+      break;
+    case 'monthly':
+      maxHoursBack = 24 * 30;
+      break;
+    case 'yearly':
+      maxHoursBack = 24 * 365;
+      break;
+    default:
+      maxHoursBack = 24;
+  }
 
   return Array.from({ length: 5 }, (_, i) => ({
     id: `anomaly-${i}`,
-    timestamp: generateTimestamp(Math.floor(Math.random() * 24)),
+    timestamp: generateTimestamp(Math.floor(Math.random() * maxHoursBack), baseDate),
     severity: severities[Math.floor(Math.random() * severities.length)],
     type: types[Math.floor(Math.random() * types.length)],
-    description: `Detected abnormal energy consumption in ${['Building A', 'Building B', 'Residential Area'][i % 3]}`,
+    description: `Detected abnormal energy consumption in ${locations[i % locations.length]}`,
     consumption: 150 + Math.random() * 100
   }));
 };
@@ -138,9 +157,10 @@ export const fetchEnergyStats = async (period = 'daily', selectedDate = null) =>
   return calculateStats(data);
 };
 
-export const fetchAnomalies = async () => {
+export const fetchAnomalies = async (period = 'daily', selectedDate = null) => {
   await new Promise(resolve => setTimeout(resolve, 700));
-  return generateAnomalies();
+  const baseDate = selectedDate ? new Date(selectedDate + 'T23:59:59') : new Date();
+  return generateAnomalies(period, baseDate);
 };
 
 export const fetchSuggestions = async () => {

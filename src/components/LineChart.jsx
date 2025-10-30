@@ -1,4 +1,4 @@
-export const LineChart = ({ data, title, period }) => {
+export const LineChart = ({ data, period }) => {
   const maxValue = Math.max(...data.map(d => Math.max(d.consumption, d.prediction)));
   const minValue = Math.min(...data.map(d => Math.min(d.consumption, d.prediction)));
   const range = maxValue - minValue;
@@ -39,9 +39,7 @@ export const LineChart = ({ data, title, period }) => {
   const showEveryNth = Math.ceil(data.length / 6);
 
   return (
-    <div className="bg-white rounded-lg shadow-sm p-6">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">{title}</h3>
-      <div className="relative">
+    <div className="relative">
         <svg viewBox="0 0 100 100" className="w-full h-64" preserveAspectRatio="none">
           <defs>
             <linearGradient id="consumptionGradient" x1="0%" y1="0%" x2="0%" y2="100%">
@@ -90,6 +88,5 @@ export const LineChart = ({ data, title, period }) => {
           </div>
         </div>
       </div>
-    </div>
   );
 };

@@ -2,11 +2,13 @@ import { useEffect, useState } from 'react';
 import { Activity, TrendingUp, Zap, AlertCircle } from 'lucide-react';
 import { StatCard } from './components/StatCard';
 import { LineChart } from './components/LineChart';
-import { DonutChart } from './components/DonutChart';
+import { BarChart } from './components/BarChart';
+import { AreaChart } from './components/AreaChart';
 import { DataTable } from './components/DataTable';
 import { AlertCard } from './components/AlertCard';
 import { PeriodSelector } from './components/PeriodSelector';
 import { DatePicker } from './components/DatePicker';
+import { ChartTypeSelector } from './components/ChartTypeSelector';
 import {
   fetchEnergyData,
   fetchEnergyStats,
@@ -21,6 +23,7 @@ function App() {
   const [suggestions, setSuggestions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedPeriod, setSelectedPeriod] = useState('daily');
+  const [selectedChartType, setSelectedChartType] = useState('line');
   const [selectedDate, setSelectedDate] = useState(() => {
     const today = new Date();
     return today.toISOString().split('T')[0];
@@ -33,7 +36,7 @@ function App() {
         const [dataResult, statsResult, anomaliesResult, suggestionsResult] = await Promise.all([
           fetchEnergyData(selectedPeriod, selectedDate),
           fetchEnergyStats(selectedPeriod, selectedDate),
-          fetchAnomalies(),
+          fetchAnomalies(selectedPeriod, selectedDate),
           fetchSuggestions()
         ]);
 
@@ -137,13 +140,14 @@ function App() {
           </div>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-          <div className="lg:col-span-2">
-            <LineChart data={energyData} title="Energy Consumption Trends" period={selectedPeriod} />
+        <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold text-gray-900">Energy Consumption Trends</h3>
+            <ChartTypeSelector selectedType={selectedChartType} onTypeChange={setSelectedChartType} />
           </div>
-          <div>
-            <DonutChart data={energyData} title="Consumption by Device" />
-          </div>
+          {selectedChartType === 'line' && <LineChart data={energyData} period={selectedPeriod} />}
+          {selectedChartType === 'bar' && <BarChart data={energyData} period={selectedPeriod} />}
+          {selectedChartType === 'area' && <AreaChart data={energyData} period={selectedPeriod} />}
         </div>
 
         <div className="mb-8">
