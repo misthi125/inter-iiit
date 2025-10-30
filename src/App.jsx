@@ -6,6 +6,7 @@ import { DonutChart } from './components/DonutChart';
 import { DataTable } from './components/DataTable';
 import { AlertCard } from './components/AlertCard';
 import { PeriodSelector } from './components/PeriodSelector';
+import { DatePicker } from './components/DatePicker';
 import {
   fetchEnergyData,
   fetchEnergyStats,
@@ -20,14 +21,18 @@ function App() {
   const [suggestions, setSuggestions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedPeriod, setSelectedPeriod] = useState('daily');
+  const [selectedDate, setSelectedDate] = useState(() => {
+    const today = new Date();
+    return today.toISOString().split('T')[0];
+  });
 
   useEffect(() => {
     const loadData = async () => {
       try {
         setLoading(true);
         const [dataResult, statsResult, anomaliesResult, suggestionsResult] = await Promise.all([
-          fetchEnergyData(selectedPeriod),
-          fetchEnergyStats(selectedPeriod),
+          fetchEnergyData(selectedPeriod, selectedDate),
+          fetchEnergyStats(selectedPeriod, selectedDate),
           fetchAnomalies(),
           fetchSuggestions()
         ]);
@@ -46,18 +51,21 @@ function App() {
     loadData();
     const interval = setInterval(loadData, 30000);
     return () => clearInterval(interval);
-  }, [selectedPeriod]);
+  }, [selectedPeriod, selectedDate]);
 
   const getPeriodLabel = () => {
+    const date = new Date(selectedDate);
+    const formattedDate = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
     switch (selectedPeriod) {
       case 'daily':
-        return 'Last 24 hours';
+        return formattedDate;
       case 'weekly':
-        return 'Last 7 days';
+        return `7 days ending ${formattedDate}`;
       case 'monthly':
-        return 'Last 30 days';
+        return `30 days ending ${formattedDate}`;
       case 'yearly':
-        return 'Last 12 months';
+        return `12 months ending ${formattedDate}`;
       default:
         return 'Current period';
     }
@@ -77,16 +85,21 @@ function App() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
-              Smart Energy Consumption Dashboard
-            </h1>
-            <p className="text-gray-600">
-              AI-powered energy monitoring and predictive analytics
-            </p>
+        <div className="mb-8">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                Smart Energy Consumption Dashboard
+              </h1>
+              <p className="text-gray-600">
+                AI-powered energy monitoring and predictive analytics
+              </p>
+            </div>
+            <div className="flex items-center gap-3">
+              <DatePicker selectedDate={selectedDate} onDateChange={setSelectedDate} />
+              <PeriodSelector selectedPeriod={selectedPeriod} onPeriodChange={setSelectedPeriod} />
+            </div>
           </div>
-          <PeriodSelector selectedPeriod={selectedPeriod} onPeriodChange={setSelectedPeriod} />
         </div>
 
         {stats && (

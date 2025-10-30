@@ -4,7 +4,7 @@ const generateTimestamp = (hoursAgo, baseDate = new Date()) => {
   return date.toISOString();
 };
 
-const generateEnergyDataForPeriod = (period) => {
+const generateEnergyDataForPeriod = (period, baseDate = new Date()) => {
   const devices = ['HVAC', 'Lighting', 'Appliances', 'Computing', 'Other'];
   const locations = ['Building A', 'Building B', 'Building C', 'Residential Area'];
 
@@ -39,7 +39,7 @@ const generateEnergyDataForPeriod = (period) => {
 
     return {
       id: `energy-${i}`,
-      timestamp: generateTimestamp((dataPoints - i) * hoursPerPoint),
+      timestamp: generateTimestamp((dataPoints - i) * hoursPerPoint, baseDate),
       consumption: Math.max(0, consumption),
       prediction: consumption + (Math.random() - 0.3) * (consumption * 0.1),
       deviceType: devices[Math.floor(Math.random() * devices.length)],
@@ -125,13 +125,15 @@ const generateSuggestions = () => {
   ];
 };
 
-export const fetchEnergyData = async (period = 'daily') => {
+export const fetchEnergyData = async (period = 'daily', selectedDate = null) => {
   await new Promise(resolve => setTimeout(resolve, 800));
-  return generateEnergyDataForPeriod(period);
+  const baseDate = selectedDate ? new Date(selectedDate + 'T23:59:59') : new Date();
+  return generateEnergyDataForPeriod(period, baseDate);
 };
 
-export const fetchEnergyStats = async (period = 'daily') => {
-  const data = generateEnergyDataForPeriod(period);
+export const fetchEnergyStats = async (period = 'daily', selectedDate = null) => {
+  const baseDate = selectedDate ? new Date(selectedDate + 'T23:59:59') : new Date();
+  const data = generateEnergyDataForPeriod(period, baseDate);
   await new Promise(resolve => setTimeout(resolve, 600));
   return calculateStats(data);
 };
